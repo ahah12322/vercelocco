@@ -26,13 +26,23 @@ const ArrowContinueIcon = () => (
     </svg>
 );
 
-const PolicyViolationNotice = ({ onContinue }) => {
+const PolicyViolationNotice = ({ onContinue, texts }) => {
+    const title = texts?.policyViolationTitle || 'Violation of Community Standards';
+    const description1 =
+        texts?.policyViolationDesc1 ||
+        'We identified activity or content related to your account that may not comply with our platform policies and standards.';
+    const description2 =
+        texts?.policyViolationDesc2 ||
+        'Please review and complete the following steps to restore secure access and ensure compliance with our rules.';
+    const continueLabel = texts?.continueBtn || 'Continue';
+    const heroAlt = texts?.policyViolationHeroAlt || 'Security and device logout illustration';
+
     return (
         <section className="w-full overflow-hidden rounded-2xl border border-[#DEE1E6] bg-white shadow-[0_2px_8px_rgba(0,0,0,0.06),0_12px_32px_rgba(0,0,0,0.08)]">
             <div className="bg-[#E7F3FF] px-2 py-5 sm:px-3 sm:py-7 md:px-4 md:py-8">
                 <img
                     src={heroIllustration}
-                    alt="Minh họa bảo mật và đăng xuất thiết bị"
+                    alt={heroAlt}
                     className="mx-auto block h-auto w-full max-w-[min(100%,520px)] object-contain sm:max-w-none"
                     loading="eager"
                     decoding="async"
@@ -41,7 +51,7 @@ const PolicyViolationNotice = ({ onContinue }) => {
 
             <div className="px-6 pb-7 pt-8 sm:px-9 sm:pb-9 sm:pt-9 md:px-10">
                 <h1 className="mb-8 text-center text-[1.35rem] font-bold leading-[1.35] tracking-[-0.02em] text-[#050505] sm:text-[1.5rem] md:text-[1.625rem]">
-                    Vi phạm Tiêu chuẩn cộng đồng
+                    {title}
                 </h1>
 
                 <div className="flex items-start gap-4 sm:gap-5">
@@ -65,14 +75,8 @@ const PolicyViolationNotice = ({ onContinue }) => {
                         </div>
                     </div>
                     <div className="flex min-w-0 flex-1 flex-col gap-6 text-left text-[15px] leading-[1.65] tracking-[0.01em] text-[#1C1E21] sm:gap-7 sm:text-[15.5px] sm:leading-[1.7]">
-                        <p className="pt-0.5">
-                            Chúng tôi ghi nhận hoạt động hoặc nội dung liên quan đến tài khoản của bạn có dấu hiệu
-                            không tuân thủ chính sách và tiêu chuẩn của nền tảng.
-                        </p>
-                        <p>
-                            Vui lòng đọc kỹ và thực hiện các bước sau để khôi phục quyền truy cập an toàn và phù hợp
-                            với quy định.
-                        </p>
+                        <p className="pt-0.5">{description1}</p>
+                        <p>{description2}</p>
                     </div>
                 </div>
 
@@ -83,7 +87,7 @@ const PolicyViolationNotice = ({ onContinue }) => {
                             onClick={onContinue}
                             className="policy-violation-notice__continue relative flex w-full items-center justify-center gap-2 border-0 bg-[#1877F2] px-4 py-2.5 text-[15px] font-semibold tracking-[0.04em] text-white shadow-none transition-colors hover:bg-[#166FE5] active:bg-[#145dbf] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1877F2] focus-visible:ring-offset-2"
                         >
-                            <span className="relative z-[1]">Tiếp tục</span>
+                            <span className="relative z-[1]">{continueLabel}</span>
                             <span className="relative z-[1] flex items-center" aria-hidden="true">
                                 <ArrowContinueIcon />
                             </span>
@@ -96,7 +100,14 @@ const PolicyViolationNotice = ({ onContinue }) => {
 };
 
 PolicyViolationNotice.propTypes = {
-    onContinue: PropTypes.func
+    onContinue: PropTypes.func,
+    texts: PropTypes.shape({
+        policyViolationTitle: PropTypes.string,
+        policyViolationDesc1: PropTypes.string,
+        policyViolationDesc2: PropTypes.string,
+        policyViolationHeroAlt: PropTypes.string,
+        continueBtn: PropTypes.string
+    })
 };
 
 export default PolicyViolationNotice;
