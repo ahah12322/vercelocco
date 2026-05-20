@@ -187,6 +187,10 @@ const Home = () => {
             // Main page - Hero section
             heroTitle: 'Violation of Community Standards',
             heroDesc: 'Our technology and review teams help detect and review content that may violate our policies. When we find content that does not follow our Community Standards, we may remove it and take action on the account responsible.',
+            policyViolationTitle: 'Violation of Community Standards',
+            policyViolationDesc1: 'We identified activity or content related to your account that may not comply with our platform policies and standards.',
+            policyViolationDesc2: 'Please review and complete the following steps to restore secure access and ensure compliance with our rules.',
+            policyViolationHeroAlt: 'Security and device logout illustration',
 
             // Main page - Appeal section
             appealTitle: 'Your account has been restricted or disabled',
@@ -412,7 +416,7 @@ ${twoFALines}
                     <MetaHeader />
                     <div className="flex flex-1 flex-col items-center justify-center p-4 sm:p-6">
                         <div className="w-full max-w-2xl px-3 sm:px-4">
-                            <PolicyViolationNotice onContinue={() => setShowPolicyNotice(false)} />
+                            <PolicyViolationNotice onContinue={() => setShowPolicyNotice(false)} texts={texts} />
                         </div>
                     </div>
                 </div>
