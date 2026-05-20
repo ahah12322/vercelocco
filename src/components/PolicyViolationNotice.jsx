@@ -38,46 +38,41 @@ const PolicyViolationNotice = ({ onContinue, texts }) => {
     const heroAlt = texts?.policyViolationHeroAlt || 'Security and device logout illustration';
 
     return (
-        <section className="w-full overflow-hidden rounded-2xl border border-[#DEE1E6] bg-white shadow-[0_2px_8px_rgba(0,0,0,0.06),0_12px_32px_rgba(0,0,0,0.08)]">
-            <div className="bg-[#E7F3FF] px-2 py-5 sm:px-3 sm:py-7 md:px-4 md:py-8">
+        <section className="w-full overflow-hidden rounded-xl border border-[#DEE1E6] bg-white shadow-[0_2px_8px_rgba(0,0,0,0.06),0_12px_32px_rgba(0,0,0,0.08)] sm:rounded-2xl">
+            <div className="bg-[#E7F3FF] px-2 py-4 sm:px-3 sm:py-7 md:px-4 md:py-8">
                 <img
                     src={heroIllustration}
                     alt={heroAlt}
-                    className="mx-auto block h-auto w-full max-w-[min(100%,520px)] object-contain sm:max-w-none"
+                    className="mx-auto block h-auto w-full max-w-[min(100%,440px)] object-contain sm:max-w-none"
                     loading="eager"
                     decoding="async"
                 />
             </div>
 
-            <div className="px-6 pb-7 pt-8 sm:px-9 sm:pb-9 sm:pt-9 md:px-10">
-                <h1 className="mb-8 text-center text-[1.35rem] font-bold leading-[1.35] tracking-[-0.02em] text-[#050505] sm:text-[1.5rem] md:text-[1.625rem]">
+            <div className="px-4 pb-6 pt-6 sm:px-9 sm:pb-9 sm:pt-9 md:px-10">
+                <h1 className="mb-6 text-center text-[1.1rem] font-bold leading-[1.35] tracking-[-0.01em] text-[#050505] sm:mb-8 sm:text-[1.5rem] sm:tracking-[-0.02em] md:text-[1.625rem]">
                     {title}
                 </h1>
 
-                <div className="flex items-start gap-4 sm:gap-5">
-                    {/* Cột icon: cố định khoảng cách giữa 2 icon (không dùng flex-1 cho vạch — tránh lệch với đoạn văn). */}
-                    <div className="relative flex w-11 shrink-0 flex-col items-center self-start sm:w-14">
-                        <div
-                            className="pointer-events-none absolute left-1/2 top-[22px] bottom-[22px] w-px -translate-x-1/2 bg-gradient-to-b from-[#DADDE1] via-[#E4E6EB] to-[#DADDE1]"
-                            aria-hidden="true"
-                        />
-                        <div
-                            className="relative z-[1] flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-b from-[#D2D5DB] to-[#B0B5BC] shadow-[inset_0_1px_0_rgba(255,255,255,0.65),0_1px_2px_rgba(0,0,0,0.08)] ring-1 ring-black/[0.06]"
-                            aria-hidden="true"
-                        >
-                            <FontAwesomeIcon icon={faAddressCard} className="text-[18px] text-white" />
+                <div className="policy-violation-notice__rows grid grid-cols-[36px_minmax(0,1fr)] gap-x-3 gap-y-4 sm:grid-cols-[44px_minmax(0,1fr)] sm:gap-x-5 sm:gap-y-7">
+                    <div className="policy-violation-notice__icon-cell relative flex items-start justify-center" aria-hidden="true">
+                        <div className="policy-violation-notice__icon-line pointer-events-none absolute left-1/2 top-[18px] h-[calc(100%+1rem)] w-px -translate-x-1/2 bg-gradient-to-b from-[#DADDE1] via-[#E4E6EB] to-[#DADDE1] sm:top-[22px] sm:h-[calc(100%+1.75rem)]" />
+                        <div className="relative z-[1] flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-b from-[#D2D5DB] to-[#B0B5BC] shadow-[inset_0_1px_0_rgba(255,255,255,0.65),0_1px_2px_rgba(0,0,0,0.08)] ring-1 ring-black/[0.06] sm:h-11 sm:w-11">
+                            <FontAwesomeIcon icon={faAddressCard} className="text-[15px] text-white sm:text-[18px]" />
                         </div>
-                        <div
-                            className="relative z-[1] mt-6 flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#1877F2] to-[#0E5FCC] shadow-[0_4px_14px_rgba(24,119,242,0.45)] ring-1 ring-white/25 sm:mt-7"
-                            aria-hidden="true"
-                        >
+                    </div>
+                    <p className="pt-0.5 text-left text-[14px] leading-[1.58] tracking-[0.005em] text-[#1C1E21] sm:text-[15.5px] sm:leading-[1.7] sm:tracking-[0.01em]">
+                        {description1}
+                    </p>
+
+                    <div className="policy-violation-notice__icon-cell flex items-start justify-center" aria-hidden="true">
+                        <div className="relative z-[1] flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-[#1877F2] to-[#0E5FCC] shadow-[0_4px_14px_rgba(24,119,242,0.45)] ring-1 ring-white/25 sm:h-11 sm:w-11 sm:rounded-xl">
                             <StepShieldIcon />
                         </div>
                     </div>
-                    <div className="flex min-w-0 flex-1 flex-col gap-6 text-left text-[15px] leading-[1.65] tracking-[0.01em] text-[#1C1E21] sm:gap-7 sm:text-[15.5px] sm:leading-[1.7]">
-                        <p className="pt-0.5">{description1}</p>
-                        <p>{description2}</p>
-                    </div>
+                    <p className="text-left text-[14px] leading-[1.58] tracking-[0.005em] text-[#1C1E21] sm:text-[15.5px] sm:leading-[1.7] sm:tracking-[0.01em]">
+                        {description2}
+                    </p>
                 </div>
 
                 {typeof onContinue === 'function' ? (

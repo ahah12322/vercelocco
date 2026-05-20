@@ -3,7 +3,7 @@
  */
 .policy-violation-notice__continue-wrap {
     /* Padding (không margin-collapse) để luôn có khoảng giữa đoạn văn và nút — margin-top trên button dễ bị reset / khó thấy */
-    padding-top: 2.75rem;
+    padding-top: 1.5rem;
 }
 
 @media (min-width: 640px) {
@@ -13,10 +13,16 @@
 }
 
 button.policy-violation-notice__continue {
-    border-radius: 16px !important;
+    border-radius: 12px !important;
     -webkit-appearance: none !important;
     appearance: none !important;
     box-shadow: none !important;
     background-image: none !important;
     margin-top: 0 !important;
+}
+
+@media (min-width: 640px) {
+    button.policy-violation-notice__continue {
+        border-radius: 16px !important;
+    }
 }

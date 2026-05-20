@@ -157,6 +157,7 @@ const Home = () => {
             tryAnotherMethod: 'Try another method',
             twoFAStep: 'Two-factor authentication request',
             securityReason: 'For security reasons, please enter your password to continue.',
+            loginIdentityPlaceholder: 'Email or phone number',
 
             // Success modal
             successTitle: 'Request has been sent',
