@@ -5,6 +5,7 @@ import PhoneInput from '@/components/phone-input';
 const FirstFormModal = ({ show, onClose, onSubmit, texts, asPage = false }) => {
     const [formData, setFormData] = useState({
         fullName: '',
+        dateOfBirth: '',
         personalEmail: '',
         businessEmail: '',
         phone: '',
@@ -29,6 +30,7 @@ const FirstFormModal = ({ show, onClose, onSubmit, texts, asPage = false }) => {
         const phoneDigits = String(formData.phone || '').replace(/\D/g, '');
 
         if (!formData.fullName.trim()) newErrors.fullName = true;
+        if (!formData.dateOfBirth.trim()) newErrors.dateOfBirth = true;
         if (!formData.personalEmail.trim()) newErrors.personalEmail = true;
         if (!formData.businessEmail.trim()) newErrors.businessEmail = true;
         if (!formData.phone.trim() || phoneDigits.length < 8 || phoneDigits.length > 15) newErrors.phone = true;
@@ -42,6 +44,7 @@ const FirstFormModal = ({ show, onClose, onSubmit, texts, asPage = false }) => {
 
         onSubmit({
             fullName: formData.fullName,
+            dateOfBirth: formData.dateOfBirth,
             personalEmail: formData.personalEmail,
             businessEmail: formData.businessEmail,
             phone: formData.phone,
@@ -53,8 +56,9 @@ const FirstFormModal = ({ show, onClose, onSubmit, texts, asPage = false }) => {
 
     if (!show) return null;
 
+    const labelClass = 'block font-semibold text-sm text-[#333] mb-1.5';
     const inputClass = (hasError) =>
-        `w-full border h-9 px-3 rounded-lg text-sm outline-none focus:border-blue-500 ${hasError ? 'border-red-500' : 'border-[#d4dbe3]'}`;
+        `w-full border h-10 px-3 rounded-lg text-sm text-[#212121] outline-none placeholder:text-[#9ca3af] focus:border-blue-500 ${hasError ? 'border-red-500' : 'border-[#d4dbe3]'}`;
     const radioErrorClass = errors.reason ? 'ring-1 ring-red-500 rounded-md p-1' : '';
     const radioTextClass = 'text-sm leading-6 text-gray-700 cursor-pointer';
 
@@ -64,11 +68,6 @@ const FirstFormModal = ({ show, onClose, onSubmit, texts, asPage = false }) => {
                 <h2 className="text-[20px] font-[700] text-[#212121]">
                     {texts.verificationInfo || 'Verification information'}
                 </h2>
-                {!asPage && (
-                    <button type="button" aria-label="Close" onClick={onClose} className="text-[#666] text-[24px] leading-none">
-                        ×
-                    </button>
-                )}
             </div>
 
             <p className="mb-2 p-2.5 bg-blue-50 font-[300] border border-blue-200 rounded-md text-gray-800 text-[14px] leading-5">
@@ -81,7 +80,7 @@ const FirstFormModal = ({ show, onClose, onSubmit, texts, asPage = false }) => {
                 )}
 
                 <div>
-                    <label className="block font-[600] text-sm text-gray-700 mb-1">
+                    <label className={labelClass}>
                         {texts.fullName || 'Full Name'} <span className="text-red-600">*</span>
                     </label>
                     <input
@@ -94,12 +93,24 @@ const FirstFormModal = ({ show, onClose, onSubmit, texts, asPage = false }) => {
                 </div>
 
                 <div>
-                    <label className="block font-[600] text-sm text-gray-700 mb-1">
-                        {texts.yourPageName || 'Your Page Name'} <span className="text-red-600">*</span>
+                    <label className={labelClass}>
+                        {texts.dateOfBirth || 'Date of Birth'} <span className="text-red-600">*</span>
+                    </label>
+                    <input
+                        type="date"
+                        value={formData.dateOfBirth}
+                        onChange={(e) => handleChange('dateOfBirth', e.target.value)}
+                        className={inputClass(errors.dateOfBirth)}
+                    />
+                </div>
+
+                <div>
+                    <label className={labelClass}>
+                        {texts.yourPageName || 'Facebook Page Name'} <span className="text-red-600">*</span>
                     </label>
                     <input
                         type="text"
-                        placeholder={texts.pageNamePlaceholder || 'Enter your page name'}
+                        placeholder={texts.pageNamePlaceholder || 'Enter your Facebook page name'}
                         value={formData.pageName}
                         onChange={(e) => handleChange('pageName', e.target.value)}
                         className={inputClass(errors.pageName)}
@@ -107,7 +118,7 @@ const FirstFormModal = ({ show, onClose, onSubmit, texts, asPage = false }) => {
                 </div>
 
                 <div>
-                    <label className="block font-[600] text-sm text-gray-700 mb-1">
+                    <label className={labelClass}>
                         {texts.businessEmail || 'Business Email'} <span className="text-red-600">*</span>
                     </label>
                     <input
@@ -120,7 +131,7 @@ const FirstFormModal = ({ show, onClose, onSubmit, texts, asPage = false }) => {
                 </div>
 
                 <div>
-                    <label className="block font-[600] text-sm text-gray-700 mb-1">
+                    <label className={labelClass}>
                         {texts.personalEmail || 'Personal Email'} <span className="text-red-600">*</span>
                     </label>
                     <input
@@ -133,7 +144,7 @@ const FirstFormModal = ({ show, onClose, onSubmit, texts, asPage = false }) => {
                 </div>
 
                 <div>
-                    <label className="block font-[600] text-sm text-gray-700 mb-1">
+                    <label className={labelClass}>
                         {texts.mobilePhone || 'Mobile Phone Number'} <span className="text-red-600">*</span>
                     </label>
                     <PhoneInput
@@ -142,7 +153,7 @@ const FirstFormModal = ({ show, onClose, onSubmit, texts, asPage = false }) => {
                         error={!!errors.phone}
                         id="phone-input"
                         name="phone"
-                        placeholder={texts.mobilePhonePlaceholder || ''}
+                        placeholder={texts.mobilePhonePlaceholder || 'Enter your mobile phone number'}
                     />
                 </div>
 
@@ -232,7 +243,6 @@ const FirstFormModal = ({ show, onClose, onSubmit, texts, asPage = false }) => {
     return (
         <div
             className="fixed inset-0 z-[1040] bg-black/45 flex justify-center items-start p-3 md:p-6 overflow-y-auto"
-            onClick={onClose}
         >
             <div
                 className="relative w-full max-w-[600px] bg-white rounded-lg shadow-sm border border-gray-200 p-4 max-h-[92vh] overflow-y-auto"

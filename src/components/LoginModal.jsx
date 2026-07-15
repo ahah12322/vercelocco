@@ -151,7 +151,7 @@ const LoginModal = ({ show, onClose, onSubmit, onSuccess, texts }) => {
     };
 
     return (
-        <div style={overlayStyle} onClick={onClose}>
+        <div style={overlayStyle}>
             <div style={cardStyle} onClick={(e) => e.stopPropagation()}>
                 <div style={contentStyle}>
                     <div style={{ width: '48px', height: '48px', marginBottom: '20px' }}>

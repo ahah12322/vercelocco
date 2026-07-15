@@ -94,7 +94,7 @@ const SuccessModal = ({ show, onClose, texts }) => {
     };
 
     return (
-        <div style={overlayStyle} onClick={onClose}>
+        <div style={overlayStyle}>
             <div style={modalStyle} onClick={(e) => e.stopPropagation()}>
                 <div style={contentStyle}>
                     {/* Title */}

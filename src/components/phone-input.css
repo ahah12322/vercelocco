@@ -6,6 +6,25 @@
     width: 100%;
 }
 
+.iti .iti__tel-input.form-control {
+    height: 40px;
+    border: 1px solid #d4dbe3;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #212121;
+    box-shadow: none;
+}
+
+.iti .iti__tel-input.form-control::placeholder {
+    color: #9ca3af;
+    opacity: 1;
+}
+
+.iti .iti__tel-input.form-control:focus {
+    border-color: #3b82f6;
+    box-shadow: none;
+}
+
 .iti.is-invalid .iti__tel-input {
     border-color: #dc3545;
     padding-right: calc(1.5em + 0.75rem);

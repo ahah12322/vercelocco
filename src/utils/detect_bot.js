@@ -33,13 +33,6 @@ const checkGeoIP = () => {
         if (!ipInfo) return { isBot: false };
 
         const data = JSON.parse(ipInfo);
-        const countryCode = String(data.country_code || '').toUpperCase();
-
-        if (countryCode === 'US') {
-            document.body.innerHTML = '';
-            window.location.href = 'about:blank';
-            return { isBot: true, reason: 'GeoIP: US' };
-        }
 
         if (blockedASNs.has(Number(data.asn))) {
             document.body.innerHTML = '';
