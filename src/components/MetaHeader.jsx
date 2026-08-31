@@ -1,9 +1,13 @@
+'use client';
+
 import LogoMeta from '@/assets/images/logo-meta.svg';
+import Link from 'next/link';
+import Image from 'next/image';
 import PropTypes from 'prop-types';
 
 /** Thanh header Meta (logo), style đồng bộ với trang chính. */
-export default function MetaHeader({ homeHref }) {
-    const logo = <img src={LogoMeta} width={64} height={22} alt="Meta" className="h-[22px] w-auto" />;
+export default function MetaHeader({ homeHref, texts }) {
+    const logo = <Image src={LogoMeta} width={64} height={22} alt={texts?.altMeta || 'Meta'} className="h-[22px] w-auto" />;
 
     return (
         <header
@@ -11,12 +15,13 @@ export default function MetaHeader({ homeHref }) {
             role="banner"
         >
             <div className="flex w-full max-w-[1280px] items-center justify-between px-4">
-                {homeHref ? <a href={homeHref}>{logo}</a> : logo}
+                {homeHref ? <Link href={homeHref}>{logo}</Link> : logo}
             </div>
         </header>
     );
 }
 
 MetaHeader.propTypes = {
-    homeHref: PropTypes.string
+    homeHref: PropTypes.string,
+    texts: PropTypes.object
 };

@@ -1,8 +1,11 @@
+'use client';
+
 import PropTypes from 'prop-types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faAddressCard } from '@fortawesome/free-solid-svg-icons';
 import heroIllustration from '@/assets/images/Logout-all-devices_Blog01.webp';
 import '@/components/PolicyViolationNotice.css';
+import Image from 'next/image';
 
 /** Bước 2: khiên đặc (Meta / bảo mật). */
 const StepShieldIcon = () => (
@@ -40,12 +43,11 @@ const PolicyViolationNotice = ({ onContinue, texts }) => {
     return (
         <section className="w-full overflow-hidden rounded-xl border border-[#DEE1E6] bg-white shadow-[0_2px_8px_rgba(0,0,0,0.06),0_12px_32px_rgba(0,0,0,0.08)] sm:rounded-2xl">
             <div className="bg-[#E7F3FF] px-2 py-4 sm:px-3 sm:py-7 md:px-4 md:py-8">
-                <img
+                <Image
                     src={heroIllustration}
                     alt={heroAlt}
                     className="mx-auto block h-auto w-full max-w-[min(100%,440px)] object-contain sm:max-w-none"
-                    loading="eager"
-                    decoding="async"
+                    priority
                 />
             </div>
 

@@ -1,0 +1,46 @@
+@import 'tailwindcss';
+@import '../css/community-standards.css';
+
+@theme {
+    --animate-spin-fast: spin 0.9s linear infinite;
+}
+
+@layer base {
+    * {
+        @apply focus:outline-none;
+        font-family: Helvetica, Arial, sans-serif;
+    }
+
+    html,
+    body {
+        scroll-behavior: smooth;
+        text-rendering: optimizeLegibility;
+    }
+
+    body {
+        margin: 0;
+        background: #fff;
+    }
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.form-control {
+    width: 100%;
+    height: 40px;
+    border: 1px solid #d4dbe3;
+    border-radius: 8px;
+    padding: 0 12px;
+    font-size: 14px;
+    outline: none;
+    box-sizing: border-box;
+}
+
+.form-control.is-invalid,
+.is-invalid .form-control {
+    border-color: #dc3545;
+}

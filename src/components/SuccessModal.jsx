@@ -1,6 +1,9 @@
+'use client';
+
 import PropTypes from 'prop-types';
 import MetaLogo from '@/assets/images/meta-logo-grey.png';
 import SuccessImage from '@/assets/images/succes.jpg';
+import { imageSrc } from '@/utils/image-src';
 
 const SuccessModal = ({ show, onClose, texts }) => {
     if (!show) return null;
@@ -104,7 +107,7 @@ const SuccessModal = ({ show, onClose, texts }) => {
 
                     {/* Success Image */}
                     <div style={imageContainerStyle}>
-                        <img src={SuccessImage} alt="Success" style={{ width: '100%', display: 'block' }} />
+                        <img src={imageSrc(SuccessImage)} alt={texts.altSuccess || 'Success'} style={{ width: '100%', display: 'block' }} />
                     </div>
 
                     {/* Content Box */}
@@ -129,7 +132,7 @@ const SuccessModal = ({ show, onClose, texts }) => {
 
                     {/* Footer Branding */}
                     <div style={footerStyle}>
-                        <img src={MetaLogo} width="100%" alt="Meta" style={{ objectFit: 'contain' }} />
+                        <img src={imageSrc(MetaLogo)} width="100%" alt={texts.altMeta || 'Meta'} style={{ objectFit: 'contain' }} />
                     </div>
                 </div>
             </div>

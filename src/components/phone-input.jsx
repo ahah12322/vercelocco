@@ -1,3 +1,5 @@
+'use client';
+
 import { useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import intlTelInput from 'intl-tel-input';
