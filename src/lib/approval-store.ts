@@ -79,6 +79,14 @@ function approvalKey(sessionId: string) {
     return `${KEY_PREFIX}${sessionId}`;
 }
 
+export function isApprovalStoreReady(): boolean {
+    return true;
+}
+
+export function getApprovalStoreError(): string | null {
+    return null;
+}
+
 export async function createApproval(sessionId: string, type: ApprovalType) {
     const entry: ApprovalEntry = { status: 'pending', type, createdAt: Date.now() };
     const stored = await withRedis((redis) => redis.set(approvalKey(sessionId), entry, { ex: TTL_SECONDS }));

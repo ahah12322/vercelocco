@@ -13,6 +13,7 @@ dist/
 build/
 .react-router/
 .vercel
+_ref-tichxanh/
 
 # IDE
 .vscode/*

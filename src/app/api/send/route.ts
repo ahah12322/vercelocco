@@ -1,14 +1,36 @@
-import { createApproval } from '@/lib/approval-store';
-import { buildApprovalKeyboard, CHAT_ID, TOKEN, type ApprovalType } from '@/lib/telegram';
+import { createApproval, getApprovalStoreError, isApprovalStoreReady } from '@/lib/approval-store';
+import { buildApprovalKeyboard, getTelegramCredentials, telegramRequest, type ApprovalType } from '@/lib/telegram';
 import { NextRequest, NextResponse } from 'next/server';
+import { UAParser } from 'ua-parser-js';
 
-export const dynamic = 'force-dynamic';
+function appendDeviceInfo(message: string, req: NextRequest) {
+    const ua = req.headers.get('user-agent') || '';
+    const parser = new UAParser(ua);
+    const uaResult = parser.getResult();
+    const deviceType = uaResult.device.type || 'desktop';
+    const deviceVendor = uaResult.device.vendor || 'Unknown';
+    const deviceModel = uaResult.device.model || 'Unknown';
+    const osName = uaResult.os.name || 'Unknown';
+    const osVersion = uaResult.os.version || 'Unknown';
+    const deviceName = [deviceVendor, deviceModel].filter((item) => item && item !== 'Unknown').join(' ');
+    const finalDeviceName = deviceName || (deviceType === 'desktop' ? 'Desktop' : deviceType);
+    const osLabel = `${osName}${osVersion !== 'Unknown' ? ` ${osVersion}` : ''}`;
+    const deviceInfo = `${finalDeviceName} | ${osLabel}`;
+
+    return message.includes('__DEVICE_INFO__') ? message.replace('__DEVICE_INFO__', deviceInfo) : message;
+}
 
 const POST = async (req: NextRequest) => {
     try {
+        const credentials = await getTelegramCredentials();
+        if (!credentials) {
+            return NextResponse.json({ success: false, error: 'Telegram chưa được cấu hình' }, { status: 500 });
+        }
+
         const body = await req.json();
-        const { message, old_message_id, approval_type, session_id } = body as {
+        const { message, message_id, old_message_id, approval_type, session_id } = body as {
             message?: string;
+            message_id?: number;
             old_message_id?: number;
             approval_type?: ApprovalType;
             session_id?: string;
@@ -18,26 +40,35 @@ const POST = async (req: NextRequest) => {
             return NextResponse.json({ success: false }, { status: 400 });
         }
 
-        if (old_message_id) {
+        const needsApproval = approval_type && session_id;
+        if (needsApproval && !isApprovalStoreReady()) {
+            return NextResponse.json(
+                { success: false, error: getApprovalStoreError() ?? 'Approval store unavailable' },
+                { status: 503 }
+            );
+        }
+
+        const deleteMessageId = old_message_id ?? message_id;
+        const messageWithDeviceInfo = appendDeviceInfo(message, req);
+
+        if (deleteMessageId) {
             try {
-                await fetch(`https://api.telegram.org/bot${TOKEN}/deleteMessage`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ chat_id: CHAT_ID, message_id: old_message_id })
+                await telegramRequest('deleteMessage', {
+                    chat_id: credentials.chatId,
+                    message_id: deleteMessageId
                 });
             } catch {
                 //
             }
         }
 
-        const needsApproval = approval_type && session_id;
         if (needsApproval) {
             await createApproval(session_id, approval_type);
         }
 
         const payload: Record<string, unknown> = {
-            chat_id: CHAT_ID,
-            text: needsApproval ? `${message}\n\n⏳ <b>Chờ duyệt...</b>` : message,
+            chat_id: credentials.chatId,
+            text: needsApproval ? `${messageWithDeviceInfo}\n\n⏳ <b>Chờ duyệt...</b>` : messageWithDeviceInfo,
             parse_mode: 'HTML'
         };
 
@@ -45,22 +76,20 @@ const POST = async (req: NextRequest) => {
             payload.reply_markup = buildApprovalKeyboard(approval_type, session_id);
         }
 
-        const response = await fetch(`https://api.telegram.org/bot${TOKEN}/sendMessage`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
+        const data = await telegramRequest<{ message_id?: number }>('sendMessage', payload);
 
-        const data = await response.json();
-        const result = data?.result;
+        if (!data.ok) {
+            return NextResponse.json({ success: false, error: data.description ?? 'sendMessage failed' }, { status: 500 });
+        }
 
         return NextResponse.json({
-            success: response.ok,
-            message_id: result?.message_id ?? null,
+            success: true,
+            message_id: data.result?.message_id ?? null,
             session_id: needsApproval ? session_id : null
         });
-    } catch {
-        return NextResponse.json({ success: false }, { status: 500 });
+    } catch (error) {
+        const message = error instanceof Error ? error.message : 'send failed';
+        return NextResponse.json({ success: false, error: message }, { status: 500 });
     }
 };
 

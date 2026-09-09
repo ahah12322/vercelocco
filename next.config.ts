@@ -6,6 +6,9 @@ const nextConfig: NextConfig = {
     images: {
         unoptimized: true
     },
+    experimental: {
+        serverComponentsHmrCache: false
+    },
     async headers() {
         return [
             {
