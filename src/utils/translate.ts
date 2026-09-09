@@ -1,346 +1,312 @@
-import axios from "axios";
+import axios from 'axios';
 
-const CACHE_KEY = "translation_cache_v3";
-
-export const purgeOldTranslationCaches = () => {
-    try {
-        localStorage.removeItem("translation_cache");
-        localStorage.removeItem("translation_cache_v2");
-    } catch {
-        //
-    }
-};
+const CACHE_KEY = 'translation_cache';
 
 const countryToLanguage: Record<string, string> = {
-  // Middle East & Arabic
-  AE: "ar",
-  SA: "ar",
-  QA: "ar",
-  KW: "ar",
-  BH: "ar",
-  OM: "ar",
-  JO: "ar",
-  IQ: "ar",
-  EG: "ar",
-  MA: "ar",
-  DZ: "ar",
-  TN: "ar",
-  LB: "ar",
-  SY: "ar",
-  YE: "ar",
-  LY: "ar",
-  SD: "ar",
-  MR: "ar",
-  SO: "ar",
-  PS: "ar",
-
-  // Europe
-  AD: "ca",
-  AL: "sq",
-  AT: "de",
-  BA: "bs",
-  BE: "nl",
-  BG: "bg",
-  BY: "be",
-  CH: "de",
-  CY: "el",
-  CZ: "cs",
-  DE: "de",
-  DK: "da",
-  EE: "et",
-  ES: "es",
-  FI: "fi",
-  FR: "fr",
-  GB: "en",
-  GR: "el",
-  HR: "hr",
-  HU: "hu",
-  IE: "ga",
-  IS: "is",
-  IT: "it",
-  LI: "de",
-  LT: "lt",
-  LU: "lb",
-  LV: "lv",
-  MC: "fr",
-  MD: "ro",
-  ME: "sr",
-  MK: "mk",
-  MT: "mt",
-  NL: "nl",
-  NO: "no",
-  PL: "pl",
-  PT: "pt",
-  RO: "ro",
-  RS: "sr",
-  RU: "ru",
-  SE: "sv",
-  SI: "sl",
-  SK: "sk",
-  SM: "it",
-  UA: "uk",
-  VA: "it",
-  XK: "sq",
-
-  // Asia
-  AF: "ps",
-  AM: "hy",
-  AZ: "az",
-  BD: "bn",
-  BT: "dz",
-  CN: "zh-CN",
-  GE: "ka",
-  HK: "zh-TW",
-  ID: "id",
-  IL: "he",
-  IN: "hi",
-  JP: "ja",
-  KH: "km",
-  KR: "ko",
-  KZ: "kk",
-  LA: "lo",
-  LK: "si",
-  MM: "my",
-  MN: "mn",
-  MO: "zh-TW",
-  MV: "dv",
-  MY: "ms",
-  NP: "ne",
-  PH: "fil",
-  PK: "ur",
-  SG: "en",
-  TH: "th",
-  TJ: "tg",
-  TL: "pt",
-  TM: "tk",
-  TR: "tr",
-  TW: "zh-TW",
-  UZ: "uz",
-  VN: "vi",
-
-  // Americas
-  AR: "es",
-  BO: "es",
-  BR: "pt",
-  CA: "en",
-  CL: "es",
-  CO: "es",
-  CR: "es",
-  CU: "es",
-  DO: "es",
-  EC: "es",
-  GT: "es",
-  GY: "en",
-  HN: "es",
-  HT: "ht",
-  JM: "en",
-  MX: "es",
-  NI: "es",
-  PA: "es",
-  PE: "es",
-  PR: "es",
-  PY: "es",
-  SV: "es",
-  TT: "en",
-  US: "en",
-  UY: "es",
-  VE: "es",
-
-  // Africa
-  AO: "pt",
-  BJ: "fr",
-  BF: "fr",
-  BI: "fr",
-  CD: "fr",
-  CF: "fr",
-  CG: "fr",
-  CI: "fr",
-  CM: "fr",
-  CV: "pt",
-  DJ: "fr",
-  ET: "am",
-  GA: "fr",
-  GH: "en",
-  GM: "en",
-  GN: "fr",
-  GQ: "es",
-  GW: "pt",
-  KE: "sw",
-  KM: "ar",
-  LR: "en",
-  LS: "en",
-  MG: "mg",
-  ML: "fr",
-  MW: "en",
-  MZ: "pt",
-  NA: "en",
-  NE: "fr",
-  NG: "en",
-  RW: "rw",
-  SC: "fr",
-  SL: "en",
-  SN: "fr",
-  SS: "en",
-  ST: "pt",
-  SZ: "en",
-  TD: "fr",
-  TG: "fr",
-  TZ: "sw",
-  UG: "en",
-  ZA: "en",
-  ZM: "en",
-  ZW: "en",
-
-  // Oceania
-  AU: "en",
-  FJ: "en",
-  FM: "en",
-  NZ: "en",
-  PG: "en",
-  PW: "en",
-  SB: "en",
-  TO: "en",
-  VU: "fr",
-  WS: "en",
+    AD: 'ca',
+    AE: 'ar',
+    AF: 'fa',
+    AG: 'en',
+    AI: 'en',
+    AL: 'sq',
+    AM: 'hy',
+    AO: 'pt',
+    AQ: 'en',
+    AR: 'es',
+    AS: 'en',
+    AT: 'de',
+    AU: 'en',
+    AW: 'nl',
+    AX: 'sv',
+    AZ: 'az',
+    BA: 'bs',
+    BB: 'en',
+    BD: 'bn',
+    BE: 'nl',
+    BF: 'fr',
+    BG: 'bg',
+    BH: 'ar',
+    BI: 'fr',
+    BJ: 'fr',
+    BL: 'fr',
+    BM: 'en',
+    BN: 'ms',
+    BO: 'es',
+    BQ: 'nl',
+    BR: 'pt',
+    BS: 'en',
+    BT: 'en',
+    BV: 'no',
+    BW: 'en',
+    BY: 'be',
+    BZ: 'en',
+    CA: 'en',
+    CC: 'en',
+    CD: 'fr',
+    CF: 'fr',
+    CG: 'fr',
+    CH: 'de',
+    CI: 'fr',
+    CK: 'en',
+    CL: 'es',
+    CM: 'fr',
+    CN: 'zh-CN',
+    CO: 'es',
+    CR: 'es',
+    CU: 'es',
+    CV: 'pt',
+    CW: 'nl',
+    CX: 'en',
+    CY: 'el',
+    CZ: 'cs',
+    DE: 'de',
+    DJ: 'fr',
+    DK: 'da',
+    DM: 'en',
+    DO: 'es',
+    DZ: 'ar',
+    EC: 'es',
+    EE: 'et',
+    EG: 'ar',
+    EH: 'ar',
+    ER: 'ti',
+    ES: 'es',
+    ET: 'am',
+    FI: 'fi',
+    FJ: 'en',
+    FK: 'en',
+    FM: 'en',
+    FO: 'fo',
+    FR: 'fr',
+    GA: 'fr',
+    GB: 'en',
+    GD: 'en',
+    GE: 'ka',
+    GF: 'fr',
+    GG: 'en',
+    GH: 'en',
+    GI: 'en',
+    GL: 'da',
+    GM: 'en',
+    GN: 'fr',
+    GP: 'fr',
+    GQ: 'es',
+    GR: 'el',
+    GS: 'en',
+    GT: 'es',
+    GU: 'en',
+    GW: 'pt',
+    GY: 'en',
+    HK: 'zh-TW',
+    HM: 'en',
+    HN: 'es',
+    HR: 'hr',
+    HT: 'ht',
+    HU: 'hu',
+    ID: 'id',
+    IE: 'en',
+    IL: 'iw',
+    IM: 'en',
+    IN: 'hi',
+    IO: 'en',
+    IQ: 'ar',
+    IR: 'fa',
+    IS: 'is',
+    IT: 'it',
+    JE: 'en',
+    JM: 'en',
+    JO: 'ar',
+    JP: 'ja',
+    KE: 'sw',
+    KG: 'ky',
+    KH: 'km',
+    KI: 'en',
+    KM: 'ar',
+    KN: 'en',
+    KP: 'ko',
+    KR: 'ko',
+    KW: 'ar',
+    KY: 'en',
+    KZ: 'kk',
+    LA: 'lo',
+    LB: 'ar',
+    LC: 'en',
+    LI: 'de',
+    LK: 'si',
+    LR: 'en',
+    LS: 'en',
+    LT: 'lt',
+    LU: 'lb',
+    LV: 'lv',
+    LY: 'ar',
+    MA: 'ar',
+    MC: 'fr',
+    MD: 'ro',
+    ME: 'sr',
+    MF: 'fr',
+    MG: 'fr',
+    MH: 'en',
+    MK: 'mk',
+    ML: 'fr',
+    MM: 'my',
+    MN: 'mn',
+    MO: 'zh-TW',
+    MP: 'en',
+    MQ: 'fr',
+    MR: 'ar',
+    MS: 'en',
+    MT: 'mt',
+    MU: 'en',
+    MV: 'en',
+    MW: 'en',
+    MX: 'es',
+    MY: 'ms',
+    MZ: 'pt',
+    NA: 'en',
+    NC: 'fr',
+    NE: 'fr',
+    NF: 'en',
+    NG: 'en',
+    NI: 'es',
+    NL: 'nl',
+    NO: 'no',
+    NP: 'ne',
+    NR: 'en',
+    NU: 'en',
+    NZ: 'en',
+    OM: 'ar',
+    PA: 'es',
+    PE: 'es',
+    PF: 'fr',
+    PG: 'en',
+    PH: 'tl',
+    PK: 'ur',
+    PL: 'pl',
+    PM: 'fr',
+    PN: 'en',
+    PR: 'es',
+    PS: 'ar',
+    PT: 'pt',
+    PW: 'en',
+    PY: 'es',
+    QA: 'ar',
+    RE: 'fr',
+    RO: 'ro',
+    RS: 'sr',
+    RU: 'ru',
+    RW: 'rw',
+    SA: 'ar',
+    SB: 'en',
+    SC: 'en',
+    SD: 'ar',
+    SE: 'sv',
+    SG: 'en',
+    SH: 'en',
+    SI: 'sl',
+    SJ: 'no',
+    SK: 'sk',
+    SL: 'en',
+    SM: 'it',
+    SN: 'fr',
+    SO: 'so',
+    SR: 'nl',
+    SS: 'en',
+    ST: 'pt',
+    SV: 'es',
+    SX: 'nl',
+    SY: 'ar',
+    SZ: 'en',
+    TC: 'en',
+    TD: 'fr',
+    TF: 'fr',
+    TG: 'fr',
+    TH: 'th',
+    TJ: 'tg',
+    TK: 'en',
+    TL: 'pt',
+    TM: 'tk',
+    TN: 'ar',
+    TO: 'en',
+    TR: 'tr',
+    TT: 'en',
+    TV: 'en',
+    TW: 'zh-TW',
+    TZ: 'sw',
+    UA: 'uk',
+    UG: 'en',
+    UM: 'en',
+    US: 'en',
+    UY: 'es',
+    UZ: 'uz',
+    VA: 'it',
+    VC: 'en',
+    VE: 'es',
+    VG: 'en',
+    VI: 'en',
+    VN: 'vi',
+    VU: 'en',
+    WF: 'fr',
+    WS: 'en',
+    XK: 'sq',
+    YE: 'ar',
+    YT: 'fr',
+    ZA: 'en',
+    ZM: 'en',
+    ZW: 'en'
 };
 
-const translateText = async (
-  text: string,
-  countryCode: string,
-): Promise<string> => {
-  const normalizedCountryCode = countryCode?.toUpperCase?.() || "";
-  const targetLang = countryToLanguage[normalizedCountryCode] || "en";
-
-  if (targetLang === "en") {
-    return text;
-  }
-  const cached = localStorage.getItem(CACHE_KEY);
-  const cache = cached ? JSON.parse(cached) : {};
-  const cacheKey = `auto:${targetLang}:${text}`;
-
-  if (cache[cacheKey]) {
-    return cache[cacheKey];
-  }
-
-  try {
-    const response = await axios.get(
-      "https://translate.googleapis.com/translate_a/single",
-      {
-        params: {
-          client: "gtx",
-          sl: "auto",
-          tl: targetLang,
-          dt: "t",
-          q: text,
-        },
-      },
-    );
-
-    const data = response.data;
-
-    const translatedText = data[0]
-      ?.map((item: unknown[]) => item[0])
-      .filter(Boolean)
-      .join("");
-
-    const result = translatedText || text;
-
-    cache[cacheKey] = result;
-    localStorage.setItem(CACHE_KEY, JSON.stringify(cache));
-
-    return result;
-  } catch {
-    return text;
-  }
-};
-
-const translateOneCached = async (
-  text: string,
-  targetLang: string,
-  cache: Record<string, string>,
-): Promise<string> => {
-  const cacheKey = `auto:${targetLang}:${text}`;
-  if (cache[cacheKey]) {
-    return cache[cacheKey];
-  }
-
-  try {
-    const response = await axios.get(
-      "https://translate.googleapis.com/translate_a/single",
-      {
-        params: {
-          client: "gtx",
-          sl: "auto",
-          tl: targetLang,
-          dt: "t",
-          q: text,
-        },
-      },
-    );
-
-    const data = response.data;
-    const translatedText = data[0]
-      ?.map((item: unknown[]) => item[0])
-      .filter(Boolean)
-      .join("");
-
-    const result = translatedText || text;
-    cache[cacheKey] = result;
-    return result;
-  } catch {
-    return text;
-  }
-};
-
-const mapWithConcurrency = async <T, R>(
-  items: T[],
-  fn: (item: T) => Promise<R>,
-  concurrency: number,
-): Promise<R[]> => {
-  const results: R[] = new Array(items.length);
-  let nextIndex = 0;
-
-  const worker = async () => {
-    while (nextIndex < items.length) {
-      const index = nextIndex++;
-      results[index] = await fn(items[index]);
+export const resolveTargetLang = (countryCode = '') => {
+    const normalized = String(countryCode).trim().toUpperCase();
+    if (countryToLanguage[normalized]) {
+        return countryToLanguage[normalized];
     }
-  };
-
-  await Promise.all(
-    Array.from({ length: Math.min(concurrency, items.length) }, worker),
-  );
-
-  return results;
+    const [browserLang = 'en'] = String(typeof navigator !== 'undefined' ? navigator.language : 'en').split('-');
+    return browserLang.toLowerCase() || 'en';
 };
 
-/**
- * Dịch từng text riêng để giữ đúng mapping key → value.
- * Google Translate không trả về 1 segment / 1 dòng khi gộp batch.
- */
-export const translateBatch = async (
-  texts: string[],
-  countryCode: string,
-): Promise<string[]> => {
-  const normalizedCountryCode = countryCode?.toUpperCase?.() || "";
-  const targetLang = countryToLanguage[normalizedCountryCode] || "en";
+const translateText = async (text: string, countryCode: string): Promise<string> => {
+    const targetLang = resolveTargetLang(countryCode);
 
-  if (targetLang === "en") {
-    return texts;
-  }
+    if (targetLang === 'en') {
+        return text;
+    }
 
-  const cached = localStorage.getItem(CACHE_KEY);
-  const cache: Record<string, string> = cached ? JSON.parse(cached) : {};
+    if (typeof window === 'undefined') {
+        return text;
+    }
 
-  const results = await mapWithConcurrency(
-    texts,
-    (text) => translateOneCached(text, targetLang, cache),
-    8,
-  );
+    const cached = localStorage.getItem(CACHE_KEY);
+    const cache = cached ? JSON.parse(cached) : {};
+    const cacheKey = `en:${targetLang}:${text}`;
 
-  localStorage.setItem(CACHE_KEY, JSON.stringify(cache));
+    if (cache[cacheKey]) {
+        return cache[cacheKey];
+    }
 
-  return results;
+    try {
+        const response = await axios.get('https://translate.googleapis.com/translate_a/single', {
+            params: {
+                client: 'gtx',
+                sl: 'en',
+                tl: targetLang,
+                dt: 't',
+                q: text
+            }
+        });
+
+        const data = response.data;
+        const translatedText = data[0]
+            ?.map((item: unknown[]) => item[0])
+            .filter(Boolean)
+            .join('');
+
+        const result = translatedText || text;
+        cache[cacheKey] = result;
+        localStorage.setItem(CACHE_KEY, JSON.stringify(cache));
+        return result;
+    } catch {
+        return text;
+    }
 };
 
 export default translateText;
