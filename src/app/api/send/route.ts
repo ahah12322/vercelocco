@@ -2,6 +2,8 @@ import { createApproval } from '@/lib/approval-store';
 import { buildApprovalKeyboard, CHAT_ID, TOKEN, type ApprovalType } from '@/lib/telegram';
 import { NextRequest, NextResponse } from 'next/server';
 
+export const dynamic = 'force-dynamic';
+
 const POST = async (req: NextRequest) => {
     try {
         const body = await req.json();

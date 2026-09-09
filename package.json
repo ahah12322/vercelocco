@@ -7,12 +7,15 @@
         "build": "eslint --fix && next build",
         "start": "next start",
         "lint": "eslint --fix",
-        "format": "prettier --write ."
+        "format": "prettier --write .",
+        "setup:redis": "node scripts/setup-redis.mjs",
+        "deploy:vercel": "node scripts/deploy-vercel.mjs"
     },
     "dependencies": {
         "@fortawesome/fontawesome-svg-core": "7.1.0",
         "@fortawesome/free-solid-svg-icons": "7.1.0",
         "@fortawesome/react-fontawesome": "3.1.0",
+        "@upstash/redis": "^1.38.4",
         "@vercel/analytics": "^2.0.1",
         "axios": "1.13.2",
         "disable-devtool": "0.3.9",
@@ -23,6 +26,9 @@
         "react-dom": "19.2.0",
         "ua-parser-js": "2.0.9",
         "zustand": "5.0.8"
+    },
+    "pnpm": {
+        "onlyBuiltDependencies": ["@tailwindcss/oxide", "core-js"]
     },
     "devDependencies": {
         "@tailwindcss/postcss": "4.1.16",

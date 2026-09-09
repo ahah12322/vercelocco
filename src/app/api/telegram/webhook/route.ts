@@ -2,6 +2,8 @@ import { setApprovalStatus } from '@/lib/approval-store';
 import { telegramRequest } from '@/lib/telegram';
 import { NextRequest, NextResponse } from 'next/server';
 
+export const dynamic = 'force-dynamic';
+
 type TelegramUpdate = {
     callback_query?: {
         id: string;

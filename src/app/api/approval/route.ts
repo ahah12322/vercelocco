@@ -1,6 +1,8 @@
 import { getApproval } from '@/lib/approval-store';
 import { NextRequest, NextResponse } from 'next/server';
 
+export const dynamic = 'force-dynamic';
+
 const GET = async (req: NextRequest) => {
     const sessionId = req.nextUrl.searchParams.get('session_id');
 

@@ -1,5 +1,8 @@
 # Local
 .DS_Store
+.env
+.env.*
+!.env.example
 *.local
 *.log*
 
@@ -7,9 +10,6 @@
 node_modules
 dist/
 .next/
-
-# Profile
-.rspack-profile-*/
 
 # IDE
 .vscode/*
