@@ -82,7 +82,7 @@ async function main() {
 
     console.log('\nDang deploy production...');
     const output = run('npx vercel --prod --yes');
-    const siteUrl = output.match(/https:\/\/[^\s]+/)?.[0];
+    const siteUrl = output.match(/https:\/\/[^\s"',\]]+/)?.[0];
 
     if (!siteUrl) {
         console.log(output);

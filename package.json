@@ -1,10 +1,14 @@
 {
-    "name": "newkhangdone",
+    "name": "emxxinloi",
     "version": "1.0.0",
     "private": true,
+    "packageManager": "pnpm@10.33.0",
+    "engines": {
+        "node": "22.x"
+    },
     "scripts": {
         "dev": "next dev",
-        "build": "eslint --fix && next build",
+        "build": "next build",
         "start": "next start",
         "lint": "eslint --fix",
         "format": "prettier --write .",

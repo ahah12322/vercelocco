@@ -10,8 +10,12 @@
 node_modules
 dist/
 .next/
+build/
+.react-router/
+.vercel
 
 # IDE
 .vscode/*
 !.vscode/extensions.json
 .idea
+.env*
